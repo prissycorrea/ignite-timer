@@ -4,7 +4,11 @@ import { useState } from "react";
 
 export function Home() {
     //controlled
-    const [task, setTask] = useStatetate('');
+    const [task, setTask] = useState('');
+
+    function resetForm() {
+        setTask('');
+    }
 
     return (
         <HomeContainer>
@@ -30,7 +34,7 @@ export function Home() {
                     <span>0</span>
                 </CountdownContainer>
 
-                <StartCountdownButton type="submit" disabled><Play size={24}/>Começar</StartCountdownButton>
+                <StartCountdownButton type="submit" disabled={!task}><Play size={24}/>Começar</StartCountdownButton>
             </form>
         </HomeContainer>
     )
