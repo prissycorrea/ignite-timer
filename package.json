@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "-": "^0.0.1",
+    "@hookform/resolvers": "^3.9.0",
     "@rocketseat/eslint-config": "^2.2.2",
     "D": "^1.0.0",
     "phosphor-react": "^1.4.1",
@@ -18,7 +19,8 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "react-router-dom": "^6.26.2",
-    "styled-components": "^6.1.13"
+    "styled-components": "^6.1.13",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
