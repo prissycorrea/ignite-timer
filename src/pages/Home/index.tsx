@@ -31,6 +31,7 @@ interface Cycle {
 export function Home() {
     const [cycles, setCycles] = useState<Cycle[]>([]); // Inicializa um estado para armazenar os ciclos
     const [activeCycleId, setActiveCycleId] = useState<number | null>(null); // Inicializa um estado para armazenar o ciclo ativo
+    const [amountSecondsPassed, setAmountSecondsPassed] = useState(0); // Inicializa um estado para armazenar a quantidade de segundos passados
 
     const { register, handleSubmit, watch, formState, reset } = useForm<NewCycleFormData>({
         resolver: zodResolver(newCycleFormValidationSchema),
@@ -52,7 +53,15 @@ export function Home() {
     }
 
     const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId); // Busca o ciclo ativo
-    console.log(activeCycle);
+    
+    const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0; // Calcula o total de segundos do ciclo ativo
+    const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed: 0; // Calcula a quantidade de segundos restantes
+
+    const minutesAmount = Math.floor(currentSeconds / 60); // Calcula a quantidade de minutos restantes
+    const secondsAmount = currentSeconds % 60; // Calcula a quantidade de segundos restantes
+
+    const minutes = String(minutesAmount).padStart(2, '0'); // Formata a quantidade de minutos para exibir com 2 dígitos
+    const seconds = String(secondsAmount).padStart(2, '0'); // Formata a quantidade de segundos para exibir com 2 dígitos
 
     const task = watch('task');  // Observa o campo task
     const isSubmitDisabled = !task;  // Desabilita o botão de submit se o campo task estiver vazio
@@ -87,11 +96,11 @@ export function Home() {
                 </FormContainer>
 
                 <CountdownContainer>
-                    <span>0</span>
-                    <span>0</span>
+                    <span>{minutes[0]}</span>
+                    <span>{minutes[1]}</span>
                     <Separator>:</Separator>
-                    <span>0</span>
-                    <span>0</span>
+                    <span>{seconds[0]}</span>
+                    <span>{seconds[1]}</span>
                 </CountdownContainer>
 
                 <StartCountdownButton type="submit" disabled={isSubmitDisabled}><Play size={24}/>Começar</StartCountdownButton>
