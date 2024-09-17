@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { CountdownContainer, FormContainer, HomeContainer, MinutesAmountInput, Separator, StartCountdownButton, TaskInput } from "./styles";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as zod from 'zod';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { differenceInSeconds } from "date-fns";
 
 const newCycleFormValidationSchema = zod.object({
     task: zod
@@ -26,6 +27,7 @@ interface Cycle {
     id: number; // Identificador único do ciclo, para registrar no histórico
     task: string;
     minutesAmount: number;
+    startDate: Date; // Data de início do ciclo
 }
 
 export function Home() {
@@ -41,11 +43,22 @@ export function Home() {
         }
     });
 
+    useEffect(() => {
+        if (activeCycleId) {
+            setInterval(() => {
+                setAmountSecondsPassed (
+                differenceInSeconds(new Date(), activeCycle.startDate)
+            )
+        }, 1000);
+        }
+    }, [activeCycleId]);
+
     function handleCreateNewCycle(data: NewCycleFormData) {
         const newCycle: Cycle = {
             id: new Date().getTime(), // Gera um identificador único baseado no timestamp atual
             task: data.task,
             minutesAmount: data.minutesAmount,
+            startDate: new Date(),
         }
         setCycles((state) => [...cycles, newCycle]); // Adiciona o novo ciclo ao estado de ciclos
         setActiveCycleId(newCycle.id); // Define o novo ciclo como o ciclo ativo
