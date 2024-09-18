@@ -44,14 +44,21 @@ export function Home() {
     });
 
     useEffect(() => {
+        let interval: number;
         if (activeCycleId) {
-            setInterval(() => {
-                setAmountSecondsPassed (
-                differenceInSeconds(new Date(), activeCycle.startDate)
-            )
-        }, 1000);
+            interval = setInterval(() => {
+                setAmountSecondsPassed(
+                    differenceInSeconds(new Date(), activeCycle?.startDate || new Date())
+                );
+            }, 1000);
         }
+    
+        // Limpar o intervalo quando o ciclo ativo mudar ou o componente desmontar
+        return () => {
+            clearInterval(interval);
+        };
     }, [activeCycleId]);
+    
 
     function handleCreateNewCycle(data: NewCycleFormData) {
         const newCycle: Cycle = {
@@ -62,6 +69,7 @@ export function Home() {
         }
         setCycles((state) => [...cycles, newCycle]); // Adiciona o novo ciclo ao estado de ciclos
         setActiveCycleId(newCycle.id); // Define o novo ciclo como o ciclo ativo
+        setAmountSecondsPassed(0); // Reseta a quantidade de segundos passados
         reset(); // Reseta o formulário após o submit para os valores do defaultValues
     }
 
@@ -75,6 +83,12 @@ export function Home() {
 
     const minutes = String(minutesAmount).padStart(2, '0'); // Formata a quantidade de minutos para exibir com 2 dígitos
     const seconds = String(secondsAmount).padStart(2, '0'); // Formata a quantidade de segundos para exibir com 2 dígitos
+
+    useEffect(() => {
+        if (activeCycle) {
+            document.title = `${minutes}:${seconds}`; // Atualiza o título da página com o tempo restante
+        }
+    }, [minutes, seconds, activeCycle]);
 
     const task = watch('task');  // Observa o campo task
     const isSubmitDisabled = !task;  // Desabilita o botão de submit se o campo task estiver vazio
