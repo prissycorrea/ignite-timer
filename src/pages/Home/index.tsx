@@ -12,7 +12,7 @@ const newCycleFormValidationSchema = zod.object({
     .min(1, 'Informe a tarefa que você irá realizar'),
     minutesAmount: zod
     .number()
-    .min(5, 'O ciclo precisa ser de no mínimo 5 minutos.')
+    .min(1, 'O ciclo precisa ser de no mínimo 5 minutos.')
     .max(60, 'O ciclo precisa ser de no máximo 60 minutos.'),
 }) 
 
@@ -29,6 +29,7 @@ interface Cycle {
     minutesAmount: number;
     startDate: Date; // Data de início do ciclo
     interruptedDate?: Date; // Data de interrupção do ciclo
+    finishedDate?: Date; // Data de interrupção do ciclo
 }
 
 export function Home() {
@@ -43,14 +44,28 @@ export function Home() {
             minutesAmount: 0,
         }
     });
-
+    const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId); // Busca o ciclo ativo
+    const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0; // Calcula o total de segundos do ciclo ativo
     useEffect(() => {
         let interval: number;
         if (activeCycleId) {
             interval = setInterval(() => {
-                setAmountSecondsPassed(
-                    differenceInSeconds(new Date(), activeCycle?.startDate || new Date())
-                );
+                const secondsDifference = differenceInSeconds(new Date(), activeCycle.startDate);
+                if(secondsDifference >= totalSeconds) {
+                    setCycles(state => state.map((cycle) => {
+                        if (cycle.id === activeCycleId) {
+                            return {
+                                ...cycle,
+                                finishedDate: new Date(),
+                            }
+                        }
+                        return cycle;
+                    }));
+                    setAmountSecondsPassed(totalSeconds);
+                    clearInterval(interval);
+                } else {
+                    setAmountSecondsPassed(secondsDifference);
+                }
             }, 1000);
         }
     
@@ -58,7 +73,7 @@ export function Home() {
         return () => {
             clearInterval(interval);
         };
-    }, [activeCycleId]);
+    }, [activeCycle, activeCycleId, totalSeconds]);
     
 
     function handleCreateNewCycle(data: NewCycleFormData) {
@@ -78,7 +93,7 @@ export function Home() {
         setActiveCycleId(null); // Interrompe o ciclo ativo
         setAmountSecondsPassed(0); // Reseta a quantidade de segundos passados
 
-        setCycles(cycles.map((cycle) => {
+        setCycles(state => state.map((cycle) => {
             if (cycle.id === activeCycleId) {
                 return {
                     ...cycle,
@@ -89,9 +104,7 @@ export function Home() {
         }));
     }
 
-    const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId); // Busca o ciclo ativo
-    
-    const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0; // Calcula o total de segundos do ciclo ativo
+
     const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed: 0; // Calcula a quantidade de segundos restantes
 
     const minutesAmount = Math.floor(currentSeconds / 60); // Calcula a quantidade de minutos restantes
@@ -132,7 +145,7 @@ export function Home() {
                         id="minutesAmount" 
                         placeholder="00" 
                         step={5} 
-                        min={5} 
+                        min={1} 
                         max={60}
                         disabled={ !!activeCycle }
                         {...register('minutesAmount', { valueAsNumber: true })}
